@@ -7,6 +7,15 @@ import useStateRef from "react-usestateref";
 export default function Home() {
   const [inputText, setInputText, inputTextRef] = useStateRef("");
   const [loading, setLoading] = useState(false);
+
+  const scrollToBottom = () => {
+    const chatArea = document.getElementById("chat-area");
+    if (!chatArea) {
+      return;
+    }
+    chatArea.scrollIntoView({ behavior: "smooth", block: "end" });
+  };
+
   const sendChat = async (text: string) => {
     try {
       const chatArea = document.getElementById("chat-area");
@@ -18,9 +27,11 @@ export default function Home() {
         "bg-gray-500 text-white p-3 rounded-lg w-fit message user-message";
       userChat.innerText = text;
       chatArea.appendChild(userChat);
+      scrollToBottom();
 
       setLoading(true);
       setInputText("");
+
       const response = await ollama.chat({
         model: "llama3",
         messages: [
@@ -31,12 +42,14 @@ export default function Home() {
         ],
         stream: true,
       });
-      console.log(response);
       const assistantChat = document.createElement("div");
       assistantChat.className = "message assistant-message";
       chatArea.appendChild(assistantChat);
+      scrollToBottom();
+
       for await (const part of response) {
         assistantChat.innerText += part.message.content;
+        scrollToBottom();
       }
       setLoading(false);
     } catch (error) {
@@ -47,7 +60,7 @@ export default function Home() {
     <main className="flex min-h-screen flex-col items-center justify-between p-24 gap-2">
       <h1 className="text-4xl">Ollama llama-3 Chat</h1>
       <div
-        className="flex flex-col w-full h-full max-h-screen bg-gray-200 p-4 gap-2 rounded"
+        className="flex flex-col w-full h-full bg-gray-200 p-4 gap-2 rounded overflow-y-auto"
         id="chat-area"
       >
         <div className="message user-message">Hi, how are you?</div>
