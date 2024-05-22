@@ -29,12 +29,15 @@ export default function Home() {
             content: text,
           },
         ],
+        stream: true,
       });
       console.log(response);
       const assistantChat = document.createElement("div");
       assistantChat.className = "message assistant-message";
-      assistantChat.innerText = response.message.content;
       chatArea.appendChild(assistantChat);
+      for await (const part of response) {
+        assistantChat.innerText += part.message.content;
+      }
       setLoading(false);
     } catch (error) {
       console.error(error);
